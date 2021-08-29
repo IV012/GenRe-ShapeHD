@@ -139,7 +139,6 @@ class Model_test(Model):
         # Load MarrNet-2 and D (though unused at test time)
         self.load_state_dict(opt.net_file, load_optimizer='auto')
         # Load MarrNet-1 whose outputs are inputs to D-tuned MarrNet-2
-        opt.pred_depth_minmax = True # dummy
         self.marrnet1 = Marrnet1_model(opt, logger)
         self.marrnet1.load_state_dict(opt.marrnet1_file)
         self._nets.append(self.marrnet1.net)
