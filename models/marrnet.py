@@ -9,6 +9,7 @@ from .marrnet2 import Net as Marrnet2, Model as Marrnet2_model
 
 
 class Model(Marrnet2_model):
+    @classmethod
     def add_arguments(cls, parser):
         parser.add_argument(
             '--canon_sup',
