@@ -4,7 +4,6 @@ import numpy as np
 import torch
 from torch import nn
 from models.netinterface import NetInterface
-from toolbox.cam_bp.cam_bp.functions import CameraBackProjection
 import util.util_img
 
 
@@ -29,7 +28,6 @@ class MarrnetBaseModel(NetInterface):
         self._nets = []
         self._optimizers = []
         self._moveable_vars = []
-        self.cam_bp = Camera_back_projection_layer(128)
         if opt.log_time:
             self._metrics += ['batch_time', 'data_time']
         # Parameters for different optimization methods
@@ -149,31 +147,3 @@ class MarrnetBaseModel(NetInterface):
         depth_max = bmax.view(-1, 1, 1, 1)
         abs_depth = rel_depth * (depth_max - depth_min + 1e-4) + depth_min
         return abs_depth
-
-    def proj_depth(self, abs_depth):
-        proj_depth = self.cam_bp(abs_depth)
-        return self.cam_bp.shift_tdf(proj_depth)
-
-
-class Camera_back_projection_layer(nn.Module):
-    def __init__(self, res):
-        super(Camera_back_projection_layer, self).__init__()
-        self.res = res
-
-    def forward(self, depth_t, fl=784.4645406, cam_dist=2.2):
-        # print(cam_dist)
-        n = depth_t.size(0)
-        if isinstance(fl, float):
-            fl_v = fl
-            fl = torch.FloatTensor(n, 1).cuda()
-            fl.fill_(fl_v)
-        if isinstance(cam_dist, float):
-            cmd_v = cam_dist
-            cam_dist = torch.FloatTensor(n, 1).cuda()
-            cam_dist.fill_(cmd_v)
-        return CameraBackProjection.apply(depth_t, fl, cam_dist, self.res)
-
-    @staticmethod
-    def shift_tdf(input_tdf, res=128):
-        out_tdf = 1 - res * input_tdf
-        return out_tdf
