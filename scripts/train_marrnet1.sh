@@ -17,7 +17,6 @@ source activate shaperecon
 
 python train.py \
     --net marrnet1 \
-    --pred_depth_minmax \
     --dataset shapenet \
     --classes "$class" \
     --batch_size 4 \
