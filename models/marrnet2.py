@@ -8,7 +8,6 @@ from .marrnetbase import MarrnetBaseModel
 
 
 class Model(MarrnetBaseModel):
-    @classmethod
     def add_arguments(cls, parser):
         parser.add_argument(
             '--canon_sup',
