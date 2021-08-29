@@ -90,8 +90,7 @@ class Net(nn.Module):
         # Init MarrNet-1 and load weights
         self.marrnet1 = Marrnet1(
             [3, 1, 1],
-            ['normal', 'depth', 'silhou'],
-            pred_depth_minmax=True, # not used in MarrNet
+            ['normal', 'depth', 'silhou']
         )
         if marrnet1_path:
             state_dict = torch.load(marrnet1_path)['nets'][0]
