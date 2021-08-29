@@ -10,23 +10,13 @@ from .marrnetbase import MarrnetBaseModel
 
 class Model(MarrnetBaseModel):
     @classmethod
-    def add_arguments(cls, parser):
-        parser.add_argument(
-            '--pred_depth_minmax',
-            action='store_true',
-            help="Also predicts depth minmax (for GenRe)",
-        )
-        return parser, set()
-
+    
     def __init__(self, opt, logger):
         super(Model, self).__init__(opt, logger)
         self.requires = ['rgb', 'depth', 'silhou', 'normal']
-        if opt.pred_depth_minmax:
-            self.requires.append('depth_minmax')
-        self.net = Net(
+        self.net = Uresnet(
             [3, 1, 1],
-            ['normal', 'depth', 'silhou'],
-            pred_depth_minmax=opt.pred_depth_minmax,
+            ['normal', 'depth', 'silhou']
         )
         self.criterion = nn.functional.mse_loss
         self.optimizer = self.adam(
@@ -38,12 +28,8 @@ class Model(MarrnetBaseModel):
         self._optimizers.append(self.optimizer)
         self.input_names = ['rgb']
         self.gt_names = ['depth', 'silhou', 'normal']
-        if opt.pred_depth_minmax:
-            self.gt_names.append('depth_minmax')
         self.init_vars(add_path=True)
         self._metrics = ['loss', 'depth', 'silhou', 'normal']
-        if opt.pred_depth_minmax:
-            self._metrics.append('depth_minmax')
         self.init_weight(self.net)
 
     def __str__(self):
@@ -84,21 +70,10 @@ class Model(MarrnetBaseModel):
         out['pred_silhou'] = self.postprocess(pred_silhou).numpy()
         pred_depth = self.postprocess(pred_depth, bg=0.0, input_mask=gt_silhou)
         out['pred_depth'] = pred_depth.numpy()
-        if self.opt.pred_depth_minmax:
-            pred_depth_minmax = pred['depth_minmax'].detach()
-            pred_abs_depth = self.to_abs_depth(
-                (1 - pred_depth).to(torch.device('cuda')),
-                pred_depth_minmax
-            )  # background is max now
-            pred_abs_depth[gt_silhou < 1] = 0  # set background to 0
-            out['proj_depth'] = self.proj_depth(pred_abs_depth).cpu().numpy()
-            out['pred_depth_minmax'] = pred_depth_minmax.cpu().numpy()
         if add_gt:
             out['normal_path'] = batch['normal_path']
             out['silhou_path'] = batch['silhou_path']
             out['depth_path'] = batch['depth_path']
-            if self.opt.pred_depth_minmax:
-                out['gt_depth_minmax'] = batch['depth_minmax'].numpy()
         return out
 
     def compute_loss(self, pred):
@@ -123,39 +98,4 @@ class Model(MarrnetBaseModel):
         loss_data['normal'] = loss_normal.mean().item()
         loss_data['depth'] = loss_depth.mean().item()
         loss_data['silhou'] = loss_silhou.mean().item()
-        if self.opt.pred_depth_minmax:
-            w_minmax = (256 ** 2) / 2  # matching scale of pixel predictions very roughly
-            loss_depth_minmax = w_minmax * self.criterion(
-                pred['depth_minmax'],
-                self._gt.depth_minmax
-            )
-            loss += loss_depth_minmax
-            loss_data['depth_minmax'] = loss_depth_minmax.mean().item()
         return loss, loss_data
-
-
-class Net(Uresnet):
-    def __init__(self, *args, pred_depth_minmax=True):
-        super().__init__(*args)
-        self.pred_depth_minmax = pred_depth_minmax
-        if self.pred_depth_minmax:
-            module_list = nn.Sequential(
-                nn.Conv2d(512, 512, 2, stride=2),
-                nn.Conv2d(512, 512, 4, stride=1),
-                ViewAsLinear(),
-                nn.Linear(512, 256),
-                nn.BatchNorm1d(256),
-                nn.ReLU(inplace=True),
-                nn.Linear(256, 128),
-                nn.BatchNorm1d(128),
-                nn.ReLU(inplace=True),
-                nn.Linear(128, 2)
-            )
-            self.decoder_minmax = module_list
-
-    def forward(self, input_struct):
-        x = input_struct.rgb
-        out_dict = super().forward(x)
-        if self.pred_depth_minmax:
-            out_dict['depth_minmax'] = self.decoder_minmax(self.encoder_out)
-        return out_dict
