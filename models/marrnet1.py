@@ -9,7 +9,6 @@ from .marrnetbase import MarrnetBaseModel
 
 
 class Model(MarrnetBaseModel):
-    @classmethod
     
     def __init__(self, opt, logger):
         super(Model, self).__init__(opt, logger)
