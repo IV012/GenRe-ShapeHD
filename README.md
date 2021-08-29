@@ -26,7 +26,7 @@ All code was built and tested on Ubuntu 16.04.5 LTS with Python 3.6, PyTorch 0.4
 1. Clone this repo with
 	```
     # cd to the directory you want to work in
-	git clone https://github.com/xiumingzhang/GenRe-ShapeHD.git
+	git clone https://github.com/IV012/GenRe-ShapeHD.git
 	cd GenRe-ShapeHD
 	```
 	The code below assumes you are at the repo root.
@@ -37,13 +37,6 @@ All code was built and tested on Ubuntu 16.04.5 LTS with Python 3.6, PyTorch 0.4
 	./install_trimesh.sh
 	```
 	The TensorFlow dependency in `environment.yml` is for using TensorBoard only. Remove it if you do not want to monitor your training with TensorBoard.
-
-1. The instructions below assume you have activated this environment and built the cuda extension with
-	```
-	source activate shaperecon
-	./build_toolbox.sh
-	```
-Note that due to the deprecation of cffi from pytorch 1.0 and on, this only works for pytorch 0.4.1.
 
 
 ## Downloading Our Trained Models and Training Data
