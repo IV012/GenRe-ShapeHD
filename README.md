@@ -5,14 +5,6 @@
 
 This is a repo covering the following three papers. If you find the code useful, please cite the paper(s).
 
-1. Generalizable Reconstruction (GenRe)<br/>
-**Learning to Reconstruct Shapes from Unseen Classes**<br/>
-[Xiuming Zhang](http://people.csail.mit.edu/xiuming/)&ast;, [Zhoutong Zhang](https://ztzhang.info)&ast;, [Chengkai Zhang](https://www.csail.mit.edu/person/chengkai-zhang), [Joshua B. Tenenbaum](http://web.mit.edu/cocosci/josh.html), [William T. Freeman](https://billf.mit.edu/), and [Jiajun Wu](https://jiajunwu.com/)<br/>
-*NeurIPS 2018 (Oral)*<br/>
-[Paper](http://genre.csail.mit.edu/papers/genre_nips.pdf) &nbsp; | &nbsp; [BibTeX](http://genre.csail.mit.edu/bibtex/genre_nips.bib) &nbsp; | &nbsp; [Project](http://genre.csail.mit.edu/)
-
-	&ast; indicates equal contribution.
-
 1. ShapeHD<br/>
 **Learning Shape Priors for Single-View 3D Completion and Reconstruction**<br/>
 [Jiajun Wu](https://jiajunwu.com/)&ast;, [Chengkai Zhang](https://www.csail.mit.edu/person/chengkai-zhang)&ast;, [Xiuming Zhang](http://people.csail.mit.edu/xiuming/), [Zhoutong Zhang](https://ztzhang.info), [William T. Freeman](https://billf.mit.edu/), and [Joshua B. Tenenbaum](http://web.mit.edu/cocosci/josh.html)<br/>
@@ -64,7 +56,6 @@ wget http://genre.csail.mit.edu/downloads/genre_shapehd_models.tar -P downloads/
 tar -xvf downloads/models/genre_shapehd_models.tar -C downloads/models/
 ```
 
-* GenRe: `depth_pred_with_inpaint.pt` and `full_model.pt`
 * ShapeHD: `marrnet1_with_minmax.pt` and `shapehd.pt`
 
 ### Data
@@ -88,23 +79,6 @@ For testing, we release the data of the unseen categories shown in Table 1 of th
 ## Testing with Our Models
 
 We provide `.sh` wrappers to perform testing for GenRe, ShapeHD, and MarrNet (without the reprojection consistency part).
-
-### GenRe
-
-See `scripts/test_genre.sh`.
-
-<p align="center">
-	<img align="center" src="downloads/results/genre.png" width="800">
-</p>
-
-We updated our entire pipeline to support fully differentiable end-to-end finetuning. In our NeurIPS submission, the projection from depth images to spherical maps was not implemented in a differentiable way. As a result of both the pipeline and PyTorch version upgrades, the model performace is slightly different from what was reported in the original paper.
-
-Below we tabulate the original vs. updated Chamfer distances (CD) across different Pix3D classes. The "Original" row is from Table 2 of the paper.
-
-|          |Chair | Bed | Bookcase  | Desk  | Sofa |  Table  | Wardrobe |
-|----------|:----:|:---:|:---:|:---:|:---:|:---:|:---:|
-|  **Updated** | .094 | .117  | .104  | .110  |  .086  | .114 | .106 |
-| **Original** | .093 | .113  | .101  | .109  |  .083  | .116 | .109 |
 
 ### ShapeHD
 
@@ -133,12 +107,6 @@ python -m tensorboard.main --logdir="$logdir"/tensorboard
 ```
 to visualize your losses.
 
-### GenRe
-
-Follow these steps to train the GenRe model.
-1. Train the depth estimator with `scripts/train_marrnet1.sh`
-1. Train the spherical inpainting network with `scripts/train_inpaint.sh`
-1. Train the full model with `scripts/train_full_genre.sh`
 
 ### ShapeHD
 
