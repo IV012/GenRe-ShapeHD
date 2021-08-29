@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from util import util_img
-from .marrnet1 import Net as Marrnet1
+from networks.uresnet import Net as Marrnet1
 from .marrnet2 import Net as Marrnet2, Model as Marrnet2_model
 
 
