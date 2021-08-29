@@ -18,7 +18,6 @@ source activate shaperecon
 
 python train.py \
     --net depth_pred_with_sph_inpaint \
-    --pred_depth_minmax \
     --dataset shapenet \
     --classes "$class" \
     --batch_size 4 \
