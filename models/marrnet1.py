@@ -15,7 +15,8 @@ class Model(MarrnetBaseModel):
         self.requires = ['rgb', 'depth', 'silhou', 'normal']
         self.net = Uresnet(
             [3, 1, 1],
-            ['normal', 'depth', 'silhou']
+            ['normal', 'depth', 'silhou'],
+            pred_depth_minmax=False,
         )
         self.criterion = nn.functional.mse_loss
         self.optimizer = self.adam(
@@ -98,3 +99,29 @@ class Model(MarrnetBaseModel):
         loss_data['depth'] = loss_depth.mean().item()
         loss_data['silhou'] = loss_silhou.mean().item()
         return loss, loss_data
+
+class Net(Uresnet):
+    def __init__(self, *args, pred_depth_minmax=False):
+        super().__init__(*args)
+        self.pred_depth_minmax = pred_depth_minmax
+        if self.pred_depth_minmax:
+            module_list = nn.Sequential(
+                nn.Conv2d(512, 512, 2, stride=2),
+                nn.Conv2d(512, 512, 4, stride=1),
+                ViewAsLinear(),
+                nn.Linear(512, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(inplace=True),
+                nn.Linear(256, 128),
+                nn.BatchNorm1d(128),
+                nn.ReLU(inplace=True),
+                nn.Linear(128, 2)
+            )
+            self.decoder_minmax = module_list
+
+    def forward(self, input_struct):
+        x = input_struct.rgb
+        out_dict = super().forward(x)
+        if self.pred_depth_minmax:
+            out_dict['depth_minmax'] = self.decoder_minmax(self.encoder_out)
+        return out_dict
