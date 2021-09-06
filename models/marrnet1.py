@@ -13,7 +13,7 @@ class Model(MarrnetBaseModel):
     def __init__(self, opt, logger):
         super(Model, self).__init__(opt, logger)
         self.requires = ['rgb', 'depth', 'silhou', 'normal']
-        self.net = Uresnet(
+        self.net = Net(
             [3, 1, 1],
             ['normal', 'depth', 'silhou'],
             pred_depth_minmax=False,
